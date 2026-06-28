@@ -1,11 +1,13 @@
 import { useAppSettingStore } from '../store/app-setting'
 
 export type RelayMode = 'default' | 'custom' | 'disabled'
+export type RelayFallback = 'strict' | 'public'
 
 export type RelayConfigArg = {
 	mode: RelayMode
 	urls: string[]
 	auth_token?: string | null
+	fallback: RelayFallback
 }
 
 export type VerifyRelaysResponse = {
@@ -74,11 +76,13 @@ export function getRelayRegion(url: string): RelayRegion | null {
 }
 
 export function getRelayConfigArg(): RelayConfigArg {
-	const { relayMode, relayUrls, relayAuthToken } = useAppSettingStore.getState()
+	const { relayMode, relayUrls, relayAuthToken, relayFallback } =
+		useAppSettingStore.getState()
 
 	return {
 		mode: relayMode,
 		urls: relayUrls.map((url) => url.trim()).filter(Boolean),
 		auth_token: relayAuthToken.trim() || null,
+		fallback: relayFallback,
 	}
 }

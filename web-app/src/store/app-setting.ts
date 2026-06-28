@@ -18,6 +18,7 @@ export type AppSettingsState = {
 	relayMode: 'default' | 'custom' | 'disabled'
 	relayUrls: string[]
 	relayAuthToken: string
+	relayFallback: 'strict' | 'public'
 	showBroadcastToggle: boolean
 }
 
@@ -34,6 +35,7 @@ export type AppSettingsActions = {
 	setRelayMode: (value: 'default' | 'custom' | 'disabled') => void
 	setRelayUrls: (value: string[]) => void
 	setRelayAuthToken: (value: string) => void
+	setRelayFallback: (value: 'strict' | 'public') => void
 	setShowBroadcastToggle: (value: boolean) => void
 }
 
@@ -62,6 +64,8 @@ export const useAppSettingStore = create<AppSettings>()(
 				set({ relayMode: value }),
 			setRelayUrls: (value: string[]) => set({ relayUrls: value }),
 			setRelayAuthToken: (value: string) => set({ relayAuthToken: value }),
+			setRelayFallback: (value: 'strict' | 'public') =>
+				set({ relayFallback: value }),
 			setShowBroadcastToggle: (value: boolean) =>
 				set({ showBroadcastToggle: value }),
 		}),

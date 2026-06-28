@@ -215,6 +215,11 @@
 				"authTokenDescription": "Required when your relay uses access.shared_token in its config.",
 				"showAuthToken": "Show",
 				"hideAuthToken": "Hide",
+				"fallbackLabel": "If custom relays are unreachable",
+				"fallbackStrict": "Stop the transfer",
+				"fallbackStrictDesc": "Fail closed and do not use public relays.",
+				"fallbackPublic": "Use public relays",
+				"fallbackPublicDesc": "Fall back to public iroh relays and show a notification.",
 				"privacyNote": "For a fully private setup, configure the same relay URLs on both sender and receiver devices.",
 				"testConnection": "Test connection",
 				"verifySuccess": "Relay connection OK",
@@ -227,7 +232,7 @@
 				"confirmDisableTitle": "Disable relays?",
 				"confirmDisableDescription": "You've chosen to disable relays. File transfers may fail if you try to share files with someone outside your local network. Relays help devices find & connect across difficult network conditions, and your transfers always stay end-to-end encrypted.",
 				"confirmCustomTitle": "Use custom relays?",
-				"confirmCustomDescription": "You've chosen to use custom self-hosted relays. If your custom relays are unreachable, transfers will automatically fall back to public relays and you'll be notified. Relays only help your devices connect across difficult network conditions, and your transfers always stay end-to-end encrypted.",
+				"confirmCustomDescription": "You've chosen to use custom self-hosted relays. By default, unreachable custom relays stop the transfer; public relay fallback is used only when you select it. Relays only help your devices connect across difficult network conditions, and your transfers always stay end-to-end encrypted.",
 				"confirmContinue": "Continue"
 			}
 		}

@@ -5,7 +5,7 @@ import ReactCountryFlag from 'react-country-flag'
 import { useTranslation } from '../../../i18n'
 import { useAppSettingStore } from '../../../store/app-setting'
 import { getRelayRegion } from '../../../lib/relay'
-import type { VerifyRelaysResponse } from '../../../lib/relay'
+import type { RelayFallback, VerifyRelaysResponse } from '../../../lib/relay'
 import { cn } from '../../../lib/utils'
 import { Button } from '../../ui/button'
 import {
@@ -76,9 +76,11 @@ export function RelaySettings() {
 	const relayMode = useAppSettingStore((s) => s.relayMode)
 	const relayUrls = useAppSettingStore((s) => s.relayUrls)
 	const relayAuthToken = useAppSettingStore((s) => s.relayAuthToken)
+	const relayFallback = useAppSettingStore((s) => s.relayFallback)
 	const setRelayMode = useAppSettingStore((s) => s.setRelayMode)
 	const setRelayUrls = useAppSettingStore((s) => s.setRelayUrls)
 	const setRelayAuthToken = useAppSettingStore((s) => s.setRelayAuthToken)
+	const setRelayFallback = useAppSettingStore((s) => s.setRelayFallback)
 
 	const [isTesting, setIsTesting] = useState(false)
 	const [verifyResults, setVerifyResults] = useState<
@@ -159,7 +161,12 @@ export function RelaySettings() {
 			uniqueUrls.map(async (url) => {
 				try {
 					await invoke<VerifyRelaysResponse>('verify_relays', {
-						relay: { mode: 'custom', urls: [url], auth_token: authToken },
+						relay: {
+							mode: 'custom',
+							urls: [url],
+							auth_token: authToken,
+							fallback: relayFallback,
+						},
 					})
 					return { url, ok: true }
 				} catch {
@@ -213,7 +220,12 @@ export function RelaySettings() {
 		setIsTesting(true)
 		try {
 			const result = await invoke<VerifyRelaysResponse>('verify_relays', {
-				relay: { mode: relayMode, urls: [], auth_token: null },
+				relay: {
+					mode: relayMode,
+					urls: [],
+					auth_token: null,
+					fallback: relayFallback,
+				},
 			})
 			toastManager.add({
 				title: t('settings.network.relay.verifySuccess'),
@@ -391,6 +403,47 @@ export function RelaySettings() {
 							<Plus className="mr-2 h-4 w-4" />
 							{t('settings.network.relay.addUrl')}
 						</Button>
+
+						<div className="space-y-2">
+							<Label>{t('settings.network.relay.fallbackLabel')}</Label>
+							<RadioGroup
+								value={relayFallback}
+								onValueChange={(value) =>
+									setRelayFallback(value as RelayFallback)
+								}
+							>
+								<button
+									type="button"
+									onClick={() => setRelayFallback('strict')}
+									className="flex cursor-pointer items-start gap-3 text-left"
+								>
+									<RadioGroupItem value="strict" className="mt-0.5" />
+									<div>
+										<div className="text-sm font-medium">
+											{t('settings.network.relay.fallbackStrict')}
+										</div>
+										<div className="text-sm text-muted-foreground">
+											{t('settings.network.relay.fallbackStrictDesc')}
+										</div>
+									</div>
+								</button>
+								<button
+									type="button"
+									onClick={() => setRelayFallback('public')}
+									className="flex cursor-pointer items-start gap-3 text-left"
+								>
+									<RadioGroupItem value="public" className="mt-0.5" />
+									<div>
+										<div className="text-sm font-medium">
+											{t('settings.network.relay.fallbackPublic')}
+										</div>
+										<div className="text-sm text-muted-foreground">
+											{t('settings.network.relay.fallbackPublicDesc')}
+										</div>
+									</div>
+								</button>
+							</RadioGroup>
+						</div>
 
 						<div className="space-y-2">
 							<div className="flex items-center justify-between gap-2">

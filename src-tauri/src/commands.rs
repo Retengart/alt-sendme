@@ -20,6 +20,13 @@ pub struct RelayConfigArg {
     pub mode: String,
     pub urls: Vec<String>,
     pub auth_token: Option<String>,
+    pub fallback: Option<String>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RelayFallbackPolicy {
+    Strict,
+    Public,
 }
 
 pub fn build_relay_mode(arg: Option<RelayConfigArg>) -> Result<RelayModeOption, String> {
@@ -48,6 +55,14 @@ pub fn build_relay_mode(arg: Option<RelayConfigArg>) -> Result<RelayModeOption, 
             }
             other => Err(format!("Invalid relay mode: {other}")),
         },
+    }
+}
+
+pub fn relay_fallback_policy(arg: &RelayConfigArg) -> Result<RelayFallbackPolicy, String> {
+    match arg.fallback.as_deref().unwrap_or("strict") {
+        "strict" => Ok(RelayFallbackPolicy::Strict),
+        "public" => Ok(RelayFallbackPolicy::Public),
+        other => Err(format!("Invalid relay fallback policy: {other}")),
     }
 }
 
@@ -97,10 +112,38 @@ async fn probe_relay_mode(relay_mode: RelayModeOption) -> Result<Option<String>,
     Ok(url)
 }
 
-/// Prefer configured custom relays; fall back to public relays when unreachable.
+fn apply_custom_relay_probe_result(
+    preferred: RelayModeOption,
+    fallback: RelayFallbackPolicy,
+    probe_result: Result<Option<String>, String>,
+) -> Result<(RelayModeOption, bool), String> {
+    if let Ok(Some(_)) = probe_result {
+        return Ok((preferred, false));
+    }
+
+    match fallback {
+        RelayFallbackPolicy::Strict => {
+            Err("Custom relay unreachable and strict fallback policy is enabled".to_string())
+        }
+        RelayFallbackPolicy::Public => {
+            tracing::warn!(
+                "Custom relay unreachable within {}s; falling back to public relays",
+                RELAY_PROBE_TIMEOUT.as_secs()
+            );
+            Ok((RelayModeOption::Default, true))
+        }
+    }
+}
+
+/// Prefer configured custom relays; fall back to public relays only when selected.
 pub async fn resolve_relay_mode_with_fallback(
     arg: Option<RelayConfigArg>,
 ) -> Result<(RelayModeOption, bool), String> {
+    let fallback = arg
+        .as_ref()
+        .map(relay_fallback_policy)
+        .transpose()?
+        .unwrap_or(RelayFallbackPolicy::Strict);
     let preferred = build_relay_mode(arg)?;
 
     match &preferred {
@@ -110,25 +153,25 @@ pub async fn resolve_relay_mode_with_fallback(
                 tokio::time::timeout(RELAY_PROBE_TIMEOUT, probe_relay_mode(preferred.clone()))
                     .await;
 
-            match probe {
-                Ok(Ok(Some(_))) => Ok((preferred, false)),
-                _ => {
-                    tracing::warn!(
-                        "Custom relay unreachable within {}s; falling back to public relays",
-                        RELAY_PROBE_TIMEOUT.as_secs()
-                    );
-                    Ok((RelayModeOption::Default, true))
-                }
-            }
+            let probe_result = match probe {
+                Ok(result) => result,
+                Err(_) => Err("Timed out waiting for relay connection".to_string()),
+            };
+            apply_custom_relay_probe_result(preferred, fallback, probe_result)
         }
     }
 }
 
-/// Check which relay the app can reach, with public fallback for custom mode.
+/// Check which relay the app can reach, with public fallback only when selected.
 #[tauri::command]
 pub async fn get_relay_status(
     relay: Option<RelayConfigArg>,
 ) -> Result<RelayStatusResponse, String> {
+    let fallback = relay
+        .as_ref()
+        .map(relay_fallback_policy)
+        .transpose()?
+        .unwrap_or(RelayFallbackPolicy::Strict);
     let preferred = build_relay_mode(relay.clone())?;
 
     if matches!(preferred, RelayModeOption::Disabled) {
@@ -153,6 +196,15 @@ pub async fn get_relay_status(
                 },
                 url: Some(url),
                 connected: true,
+                fell_back_to_public: false,
+            });
+        }
+
+        if matches!(fallback, RelayFallbackPolicy::Strict) {
+            return Ok(RelayStatusResponse {
+                kind: "unavailable".to_string(),
+                url: None,
+                connected: false,
                 fell_back_to_public: false,
             });
         }
@@ -305,10 +357,10 @@ pub async fn send_items(
             "share metadata prepared for multiple items"
         );
 
-        // Create send options from relay settings (custom falls back to public if unreachable).
+        // Create send options from relay settings.
         let (relay_mode, fell_back_to_public) = resolve_relay_mode_with_fallback(relay).await?;
         if fell_back_to_public {
-            // Surface the silent custom->public fallback so the user knows this
+            // Surface the selected custom->public fallback so the user knows this
             // transfer is riding public relays despite their custom config.
             let _ = app_handle.emit("relay-fell-back", "send");
         }
@@ -488,7 +540,7 @@ pub async fn receive_file(
     let output_dir = PathBuf::from(output_path);
     let (relay_mode, fell_back_to_public) = resolve_relay_mode_with_fallback(relay).await?;
     if fell_back_to_public {
-        // Surface the silent custom->public fallback so the user knows this
+        // Surface the selected custom->public fallback so the user knows this
         // transfer is riding public relays despite their custom config.
         let _ = app_handle.emit("relay-fell-back", "receive");
     }
@@ -737,6 +789,15 @@ pub async fn verify_relays(relay: RelayConfigArg) -> Result<VerifyRelaysResponse
 mod relay_config_tests {
     use super::*;
 
+    fn custom_relay_arg(fallback: Option<&str>) -> RelayConfigArg {
+        RelayConfigArg {
+            mode: "custom".to_string(),
+            urls: vec!["https://relay.example.com".to_string()],
+            auth_token: None,
+            fallback: fallback.map(str::to_string),
+        }
+    }
+
     #[test]
     fn build_relay_mode_defaults_to_public() {
         let mode = build_relay_mode(None).expect("default mode should parse");
@@ -749,6 +810,7 @@ mod relay_config_tests {
             mode: "custom".to_string(),
             urls: vec!["https://relay.example.com".to_string()],
             auth_token: Some("secret".to_string()),
+            fallback: None,
         }))
         .expect("custom mode should parse");
 
@@ -767,9 +829,52 @@ mod relay_config_tests {
             mode: "custom".to_string(),
             urls: vec![],
             auth_token: None,
+            fallback: None,
         }))
         .expect_err("empty custom urls should fail");
         assert!(err.contains("At least one relay URL"));
+    }
+
+    #[test]
+    fn relay_config_missing_fallback_defaults_to_strict() {
+        let arg: RelayConfigArg = serde_json::from_str(
+            r#"{"mode":"custom","urls":["https://relay.example.com"],"auth_token":null}"#,
+        )
+        .expect("old frontend payloads should still deserialize");
+
+        assert_eq!(
+            relay_fallback_policy(&arg).expect("policy should parse"),
+            RelayFallbackPolicy::Strict
+        );
+    }
+
+    #[test]
+    fn strict_custom_relay_probe_failure_fails_closed() {
+        let preferred = build_relay_mode(Some(custom_relay_arg(Some("strict"))))
+            .expect("custom mode should parse");
+        let err = apply_custom_relay_probe_result(
+            preferred,
+            RelayFallbackPolicy::Strict,
+            Err("Timed out waiting for relay connection".to_string()),
+        )
+        .expect_err("strict fallback should fail closed");
+
+        assert!(err.contains("Custom relay unreachable"));
+    }
+
+    #[test]
+    fn public_custom_relay_probe_failure_falls_back_to_public() {
+        let preferred = build_relay_mode(Some(custom_relay_arg(Some("public"))))
+            .expect("custom mode should parse");
+        let (mode, fell_back) = apply_custom_relay_probe_result(
+            preferred,
+            RelayFallbackPolicy::Public,
+            Err("Timed out waiting for relay connection".to_string()),
+        )
+        .expect("public fallback should use default relays");
+
+        assert!(matches!(mode, RelayModeOption::Default));
+        assert!(fell_back);
     }
 }
 

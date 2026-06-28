@@ -9,14 +9,14 @@ AltSendme is designed with privacy and security as core principles. This privacy
 - **No Account Required**: AltSendme does not require user registration, accounts, or any personal information
 - **End-to-End Encryption**: All file transfers are encrypted end-to-end using QUIC + TLS 1.3
 - **Peer-to-Peer**: Files are transferred directly between sender and receiver when possible
-- **Analytics**: GoatCounter is used to collect anonymous transfer stats only — never IP, personal data or file contents.
+- **Analytics**: GoatCounter is used to collect aggregate transfer stats only - never IP, personal data or file contents.
 
 ## How AltSendme Works
 
 AltSendme uses peer-to-peer (P2P) networking technology powered by [Iroh](https://www.iroh.computer) to transfer files directly between devices. The application:
 
 1. **Establishes Direct Connections**: When possible, files are transferred directly between devices using NAT hole punching
-2. **Uses Relay Servers as Fallback**: If direct connection isn't possible, the application may use relay servers to facilitate the transfer
+2. **Uses Relay Servers as Fallback**: If direct connection isn't possible, the application may use relay servers to facilitate the transfer. Custom relays default to strict mode, which stops the transfer if the custom relay is unreachable; public relay fallback is used only when selected.
 3. **Encrypts All Traffic**: All file data is encrypted end-to-end, meaning only the sender and receiver can decrypt it
 
 ## Data Stored Locally
@@ -29,6 +29,8 @@ AltSendme stores the following data locally on your device:
 
 This data never leaves your device unless you explicitly share it (e.g., by sharing a transfer ticket).
 
+Transfer tickets are bearer credentials while a share is active. Anyone who has the ticket can attempt to connect to the sender and receive the shared file or folder, so only share tickets with intended recipients and stop the share when finished.
+
 ## Network Connections and Third-Party Services
 
 ### Relay Servers
@@ -39,6 +41,7 @@ By default, AltSendme may use relay servers operated by the [Iroh project](https
 - Connection metadata (IP addresses, connection timestamps)
 - Connection duration
 - Amount of data transferred (bandwidth usage)
+- Timing and volume patterns for encrypted traffic
 
 **What Relay Servers Cannot See:**
 - File contents (all data is encrypted end-to-end)
@@ -49,6 +52,8 @@ By default, AltSendme may use relay servers operated by the [Iroh project](https
 **Your Control:**
 - You can disable relay servers entirely in **Settings → Network** (this may limit connectivity in some network configurations)
 - You can configure custom self-hosted relay servers in **Settings → Network** (see [`deploy/relay/`](deploy/relay/README.md) in the project repo)
+- Custom relay mode defaults to strict fallback: if your custom relay is unreachable, the transfer fails instead of using public relays
+- You can explicitly choose public relay fallback for custom relays in **Settings → Network**
 - Relay servers are only used when direct connections fail
 
 ### DNS Discovery
@@ -142,6 +147,5 @@ If you have questions about this privacy policy or how AltSendme handles your da
 While AltSendme is designed with privacy and security in mind, no method of transmission over the internet is 100% secure. Users should:
 - Only share transfer tickets with trusted parties
 - Be aware that encrypted transfer metadata may still be visible to relay server operators (connection metadata only)
-- Consider using custom relay servers or disabling relays for maximum privacy
+- Consider using custom relay servers with strict fallback, or disabling relays entirely, for maximum privacy
 - Understand that direct peer-to-peer connections may expose your IP address to the other party and also to any relay server facilitating the connection.
-

@@ -29,7 +29,7 @@
 
 A free and open-source file transfer tool that harnesses the power of [cutting-edge peer-to-peer networking](https://www.iroh.computer), letting you transfer files directly without storing them on cloud servers.
 
-Why rely on WeTransfer, Dropbox, or Google Drive when you can reliably and easily transfer files directly, end-to-end encrypted and without revealing any personal information?
+Why rely on WeTransfer, Dropbox, or Google Drive when you can reliably and easily transfer files directly, end-to-end encrypted, and without uploading them to cloud storage?
 
 Join our [Discord](https://discord.gg/xwb7z22Eve) to contribute
 
@@ -37,7 +37,7 @@ Join our [Discord](https://discord.gg/xwb7z22Eve) to contribute
 
 - **Send anywhere** – Works seamlessly on local networks or across continents.
 - [**Transfer anything**](https://www.iroh.computer/proto/iroh-blobs) – Send files or directories of any size or any format, verified with BLAKE3-based integrity checks.
-- **No accounts or personal info** – Transfer files without sign-ups or exposing personal info.
+- **No accounts** – Transfer files without sign-ups.
 - **Peer-to-peer direct transfer** – Send files straight between devices, with no cloud storage in between.
 - **Authentication** - Tickets contains cryptographic identity info for authentication.
 - **End-to-end encryption** – Always-on protection with QUIC + TLS 1.3 for forward and backward secrecy.
@@ -140,7 +140,7 @@ Content-addressed blob storage and transfer. `iroh-blobs` implements request/res
 
 ### 2. Tickets
 
-Tickets are a way to share dialing information between iroh endpoints. They're a single token that contains everything needed to connect to another endpoint, or to fetch a blob in this case. Contains Ed25519 NodeIds: Your device's cryptographic identity for authentication.They're also very powerful. It's worth pointing out this setup is considerably better than full peer-2-peer systems, which broadcast your IP to peers. Instead in iroh, tickets are used to form a "cozy network" between peers you explicitly want to connect with. It's possible to go "full p2p" & configure your app to broadcast dialing details, but tickets represent a better middle-ground default.
+Tickets are bearer credentials while a share is active: anyone who has the ticket can attempt to connect to the sender and fetch the shared blob. A ticket contains the dialing information needed to reach an iroh endpoint, including Ed25519 NodeIds used for authentication. Share tickets only with people who should receive the file, and stop the share when you no longer want the ticket to work.
 
 
 ### 3. Peer Discovery, NAT Traversal & Hole Punching
@@ -163,7 +163,7 @@ QUIC allows following super-powers:
 
 ### 5. Relays
 
-AltSendme uses open-source public relay servers to support establishing direct connections, to speed up initial connection times, and to provide a fallback should direct connections between two endpoints fail or be impossible otherwise. All connections are end-to-end encrypted. The relay is “just another UDP socket” for sending encrypted packets around. [Read more.](https://docs.iroh.computer/about/faq)
+AltSendme uses open-source public relay servers to support establishing direct connections, to speed up initial connection times, and to provide a fallback should direct connections between two endpoints fail or be impossible otherwise. All connections are end-to-end encrypted, so relays cannot read file contents, file names, or directory structures. Relay operators can still observe connection metadata such as IP addresses, timing, duration, and transfer volume. The relay is “just another UDP socket” for sending encrypted packets around. [Read more.](https://docs.iroh.computer/about/faq)
 
 ### Self-hosting relays
 
@@ -172,7 +172,8 @@ You can run your own iroh relay and point AltSendme at it instead of the public 
 1. Deploy a relay using the assets in [`deploy/relay/`](deploy/relay/README.md) (Docker Compose on a VPS or Fly.io).
 2. In the app, open **Settings → Network** and choose **Custom self-hosted**.
 3. Add your relay URL(s) and optional auth token if you enabled `access.shared_token` on the server.
-4. Use **Test connection** to verify registration.
+4. Keep the default **Stop the transfer** fallback if you want strict custom relay use, or explicitly choose **Use public relays** if availability matters more than avoiding public relay metadata.
+5. Use **Test connection** to verify registration.
 
 For a fully private setup, configure the same relay URLs on both sender and receiver devices.
 
@@ -200,7 +201,7 @@ So mixed setups are fine for getting files across, but they're **not fully priva
 
 - **Just want it to work?** An open self-hosted relay (no auth token) is enough; the other person can keep default public relays.
 - **Want a private relay?** Both people need your relay URL **and** the auth token in **Settings → Network**.
-- **Want zero public relay use?** Both people must set **Custom self-hosted** to the same relay(s).
+- **Want zero public relay fallback?** Both people must set **Custom self-hosted** to the same relay(s) and keep custom relay fallback set to **Stop the transfer**.
 - **Want no relays at all?** Both people set **Disabled** — only works when a direct connection is possible (e.g. same network).
 
 
@@ -323,5 +324,4 @@ Thank you for checking out this project! If you find it useful, consider giving 
 [badge-discord]: https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white
 [badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20Android%2C%20-green
 [badge-sponsor]: https://img.shields.io/badge/sponsor-ff69b4
-
 
