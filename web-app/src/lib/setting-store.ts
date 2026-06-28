@@ -10,6 +10,7 @@ export const defaultAppSettings: AppSettingsState = {
 	enableNotifications: true,
 	darkMode: false,
 	autoUpdate: true,
+	analyticsEnabled: false,
 	showProgressOnIcon: false,
 	downloadsPath: '',
 	windowsContextMenu: true,

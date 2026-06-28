@@ -13,6 +13,7 @@
 		"release": "node ./scripts/release.js",
 		"sync-version": "node ./scripts/sync-version.js",
 		"validate-version": "node ./scripts/validate-version.js",
+		"test:analytics": "rm -rf tmp/analytics-test-dist && tsc -p tsconfig.analytics-test.json && node --test tmp/analytics-test-dist/web-app/src/lib/analytics-decision.test.js",
 		"lint": "biome lint && tsc --noEmit --skipLibCheck",
 		"lint:fix": "biome lint --fix",
 		"format": "biome format --write && cargo fmt --manifest-path engine/Cargo.toml && cargo fmt --manifest-path src-tauri/Cargo.toml",

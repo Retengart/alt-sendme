@@ -11,6 +11,7 @@ export type AppSettingsState = {
 	enableNotifications: boolean
 	darkMode: boolean
 	autoUpdate: boolean
+	analyticsEnabled: boolean
 	showProgressOnIcon: boolean
 	downloadsPath: string
 	windowsContextMenu: boolean
@@ -26,6 +27,7 @@ export type AppSettingsActions = {
 	setEnableNotifications: (value: boolean) => void
 	setDarkMode: (value: boolean) => void
 	setAutoUpdate: (value: boolean) => void
+	setAnalyticsEnabled: (value: boolean) => void
 	toggleShowProgressOnIcon?: (value: boolean) => void
 	setDownloadsPath: (value: string) => void
 	setWindowsContextMenu: (value: boolean) => void
@@ -49,6 +51,8 @@ export const useAppSettingStore = create<AppSettings>()(
 				set({ enableNotifications: value }),
 			setDarkMode: (value: boolean) => set({ darkMode: value }),
 			setAutoUpdate: (value: boolean) => set({ autoUpdate: value }),
+			setAnalyticsEnabled: (value: boolean) =>
+				set({ analyticsEnabled: value }),
 			toggleShowProgressOnIcon: (value: boolean) =>
 				set({ showProgressOnIcon: value }),
 			setDownloadsPath: (value: string) => set({ downloadsPath: value }),

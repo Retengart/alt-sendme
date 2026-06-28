@@ -1,3 +1,9 @@
+import {
+	type AnalyticsPlatform,
+	shouldUseAnalytics,
+} from './analytics-decision'
+import { useAppSettingStore } from '../store/app-setting'
+
 declare global {
 	interface Window {
 		goatcounter?: {
@@ -14,55 +20,43 @@ declare global {
 	}
 }
 
+function getAnalyticsPlatform(): AnalyticsPlatform {
+	return import.meta.env.TAURI_PLATFORM === 'android' ? 'android' : 'desktop'
+}
+
+function isDoNotTrackEnabled(): boolean {
+	if (typeof navigator === 'undefined') {
+		return false
+	}
+
+	const value =
+		navigator.doNotTrack ??
+		(navigator as Navigator & { msDoNotTrack?: string | null }).msDoNotTrack
+
+	return value === '1' || value === 'yes' || value === 'true'
+}
+
+export function canUseAnalytics(): boolean {
+	return shouldUseAnalytics({
+		analyticsEnabled: useAppSettingStore.getState().analyticsEnabled,
+		doNotTrack: isDoNotTrackEnabled(),
+		platform: getAnalyticsPlatform(),
+	})
+}
+
 /** No-op on Android; analytics are disabled for the mobile build. */
 export function trackTransferComplete(
-	fileSizeBytes: number,
+	_fileSizeBytes: number,
 	role: 'sender' | 'receiver',
-	durationMs: number = 0
+	_durationMs: number = 0
 ): void {
-	if (import.meta.env.TAURI_PLATFORM === 'android') {
-		return
-	}
-	if (typeof window === 'undefined' || !window.goatcounter) {
+	if (!canUseAnalytics() || typeof window === 'undefined' || !window.goatcounter) {
 		return
 	}
 
 	try {
-		const sizeInMB = fileSizeBytes / (1024 * 1024)
-		let bucketSize: string
-
-		if (fileSizeBytes === 0) {
-			bucketSize = '0'
-		} else if (sizeInMB < 1) {
-			bucketSize = `${Math.round(fileSizeBytes / 1024)}KB`
-		} else if (sizeInMB < 1024) {
-			bucketSize = `${Math.round(sizeInMB)}MB`
-		} else {
-			bucketSize = `${(sizeInMB / 1024).toFixed(1)}GB`
-		}
-
-		let speedBucket = ''
-		if (durationMs > 0) {
-			const durationSeconds = durationMs / 1000
-			const speedBytesPerSecond = fileSizeBytes / durationSeconds
-			const speedMBps = speedBytesPerSecond / (1024 * 1024)
-
-			if (speedMBps < 1) {
-				const speedKBps = speedBytesPerSecond / 1024
-				speedBucket = `${Math.round(speedKBps)}KBps`
-			} else if (speedMBps < 1024) {
-				speedBucket = `${Math.round(speedMBps)}MBps`
-			} else {
-				speedBucket = `${(speedMBps / 1024).toFixed(1)}GBps`
-			}
-		}
-
-		const path = speedBucket
-			? `transfer-complete/${role}/${bucketSize}/${speedBucket}`
-			: `transfer-complete/${role}/${bucketSize}`
-
 		window.goatcounter.count({
-			path,
+			path: `transfer-complete/${role}`,
 			allow_local: true,
 		})
 	} catch (_error) {}
