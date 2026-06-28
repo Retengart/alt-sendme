@@ -17,15 +17,17 @@ type SharedInputProps = {
 	unstyled?: boolean
 }
 
-type InputProps =
-	| (SharedInputProps &
-			InputPrimitiveProps & {
-				nativeInput?: false
-			})
-	| (SharedInputProps &
-			NativeInputProps & {
-				nativeInput: true
-			})
+type BaseUiInputProps = SharedInputProps &
+	InputPrimitiveProps & {
+		nativeInput?: boolean
+	}
+
+type NativeInputModeProps = SharedInputProps &
+	NativeInputProps & {
+		nativeInput: true
+	}
+
+type InputProps = BaseUiInputProps | NativeInputModeProps
 
 function Input(props: InputProps) {
 	const {
