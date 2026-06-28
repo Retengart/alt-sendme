@@ -185,7 +185,7 @@
 			"privacy": {
 				"title": "Privacy",
 				"analytics": {
-					"label": "Share anonymous usage analytics",
+					"label": "Share aggregate usage analytics",
 					"description": "Allow desktop-only, privacy-safe analytics for coarse transfer completion events. Disabled when Do Not Track is active."
 				}
 			}
