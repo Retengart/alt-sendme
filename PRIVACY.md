@@ -80,7 +80,7 @@ When a direct peer-to-peer connection is established (the preferred method), no 
 This project uses [GoatCounter](https://www.goatcounter.com/), a privacy‑respecting, open‑source analytics service.
 
 **What GoatCounter Records:**
-- Coarse aggregate transfer event paths, such as bucketed completion, size, and speed categories
+- Coarse aggregate transfer completion event paths, currently `transfer-complete/sender` and `transfer-complete/receiver`
 - Network request metadata is received by the GoatCounter service
 
 
