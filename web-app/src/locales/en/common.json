@@ -232,7 +232,7 @@
 				"confirmDisableTitle": "Disable relays?",
 				"confirmDisableDescription": "You've chosen to disable relays. File transfers may fail if you try to share files with someone outside your local network. Relays help devices find & connect across difficult network conditions, and your transfers always stay end-to-end encrypted.",
 				"confirmCustomTitle": "Use custom relays?",
-				"confirmCustomDescription": "You've chosen to use custom self-hosted relays. By default, unreachable custom relays stop the transfer; public relay fallback is used only when you select it. Relays only help your devices connect across difficult network conditions, and your transfers always stay end-to-end encrypted.",
+				"confirmCustomDescription": "You've chosen to use custom self-hosted relays. By default, unreachable custom relays stop the transfer; public relay fallback is used only when you select it. Relays help your devices connect across difficult network conditions and can carry encrypted fallback traffic when direct paths are unavailable.",
 				"confirmContinue": "Continue"
 			}
 		}
@@ -275,7 +275,7 @@
 			"configuredDisabled": "Disabled",
 			"openSettings": "Network settings",
 			"infoToggle": "About relays",
-			"purpose": "Relays only help your devices find each other and connect.",
+			"purpose": "Relays help your devices find each other, connect, and carry encrypted fallback traffic when direct paths are unavailable.",
 			"directNote": "Once a direct connection is established, files transfer directly between devices, and the relay is no longer used.",
 			"lanNote": "On the same local network, relays are skipped entirely.",
 			"encryptedNote": "Transfers are always end-to-end encrypted, so relays never see your files.",
