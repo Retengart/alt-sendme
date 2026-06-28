@@ -90,6 +90,7 @@ scoop install extras/altsendme
 ```
 
 More download options in [GitHub Releases](https://github.com/tonyantony300/alt-sendme/releases).
+Release artifacts can be verified with Sigstore bundles and GitHub provenance attestations; see [SIGNING.md](SIGNING.md).
 
 ## Partners
 
