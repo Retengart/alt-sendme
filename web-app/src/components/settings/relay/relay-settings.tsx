@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { AlertCircle, Check, Loader2, Minus, Plus } from 'lucide-react'
 import ReactCountryFlag from 'react-country-flag'
@@ -332,7 +332,9 @@ export function RelaySettings() {
 												)}
 												<Input
 													value={url}
-													onChange={(e) => updateUrl(index, e.target.value)}
+													onChange={(e: ChangeEvent<HTMLInputElement>) =>
+														updateUrl(index, e.target.value)
+													}
 													placeholder="https://euc1-1.relay.example.com"
 													aria-invalid={isInvalidFormat || status === 'failed'}
 													inputMode="url"
@@ -408,7 +410,9 @@ export function RelaySettings() {
 								<Input
 									type="password"
 									value={relayAuthToken}
-									onChange={(e) => setRelayAuthToken(e.target.value)}
+									onChange={(e: ChangeEvent<HTMLInputElement>) =>
+										setRelayAuthToken(e.target.value)
+									}
 									placeholder={t('settings.network.relay.authTokenPlaceholder')}
 									autoComplete="off"
 								/>

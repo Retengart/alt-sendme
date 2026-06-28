@@ -13,11 +13,11 @@ type PreviousPublicInputProps = Omit<
 
 type Assert<T extends true> = T
 
-type InputPropsStillAcceptPreviousPublicShape = Assert<
-	PreviousPublicInputProps extends InputProps ? true : false
+type InputPropsRejectPreviousUnsafePublicShape = Assert<
+	PreviousPublicInputProps extends InputProps ? false : true
 >
 
-export const inputPropsCompatibilityCheck: InputPropsStillAcceptPreviousPublicShape =
+export const inputPropsSafetyBoundaryCheck: InputPropsRejectPreviousUnsafePublicShape =
 	true
 
 export function InputAcceptsRuntimeNativeBoolean({
@@ -35,7 +35,13 @@ export const inputPropsAcceptRuntimeNativeBoolean: InputProps = {
 	placeholder: 'Runtime mode',
 }
 
-export const inputPropsAcceptRuntimeNativeBooleanWithBaseUiProps: InputProps = {
+// @ts-expect-error Runtime boolean may render native input, so Base UI-only props are unsafe.
+export const inputPropsRejectRuntimeNativeBooleanWithBaseUiProps: InputProps = {
 	nativeInput: runtimeNativeInput,
 	onValueChange: () => {},
 }
+
+export const inputPropsRejectNativeTrueWithBaseUiProps = (
+	// @ts-expect-error Explicit native input mode must not accept Base UI-only props.
+	<Input nativeInput onValueChange={() => {}} />
+)
