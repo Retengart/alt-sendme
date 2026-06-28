@@ -216,7 +216,7 @@
 				"verifySuccessDescGeneric": "Erfolgreich bei Ihrem konfigurierten Relay-Server registriert.",
 				"verifyFailed": "Relay-Verbindung fehlgeschlagen",
 				"urlRequired": "Fügen Sie mindestens eine Relay-URL hinzu.",
-				"invalidUrl": "Ungültige Relay-URL: {{url}}",
+				"invalidUrl": "Ungültige Relay-URL",
 				"disabledHint": "Aktivieren Sie automatische oder benutzerdefinierte Relays, um die Verbindung zu testen.",
 				"confirmDisableTitle": "Relays deaktivieren?",
 				"confirmDisableDescription": "Sie haben sich entschieden, Relays zu deaktivieren. Dateiübertragungen können fehlschlagen, wenn Sie Dateien mit jemandem außerhalb Ihres lokalen Netzwerks teilen möchten. Relays helfen Geräten, sich unter schwierigen Netzwerkbedingungen zu finden und zu verbinden, und Ihre Übertragungen bleiben immer Ende-zu-Ende-verschlüsselt.",

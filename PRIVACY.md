@@ -26,6 +26,8 @@ AltSendme stores the following data locally on your device:
 - **Secret Keys**: Cryptographic keys used for node identification (stored in your system's standard storage location)
 - **Temporary Files**: During active transfers, temporary files are stored in your system's temp directory
 - **Downloaded Files**: Files you receive are saved to a location you choose
+- **App Settings**: Preferences such as relay mode, custom relay URLs, public fallback choice, analytics consent, and download location are stored locally
+- **Relay Auth Token**: If you configure a custom relay token, it is stored locally in the app settings file; use an OS/account you trust, or clear the token when it is no longer needed
 
 This data never leaves your device unless you explicitly share it (e.g., by sharing a transfer ticket).
 
@@ -73,7 +75,7 @@ When a direct peer-to-peer connection is established (the preferred method), no 
 - **Encryption Protocol**: All traffic uses QUIC protocol with TLS 1.3 encryption
 - **Content Verification**: Files are verified using Blake3 cryptographic hashing to ensure integrity
 - **Node IDs**: 256-bit cryptographic node identifiers are used for peer authentication
-- **No Plaintext**: File contents are never transmitted or stored in unencrypted form
+- **Encrypted Transport**: File contents are encrypted in transit. Received files are saved as normal local files at the location you choose.
 
 ## Analytics and Usage Data
 
@@ -91,6 +93,8 @@ This project uses [GoatCounter](https://www.goatcounter.com/), a privacy‑respe
 - No cookies, no device fingerprinting, no unique identifiers
 
 GoatCounter respects “Do Not Track”. According to GoatCounter's privacy documentation, it may use IP address and User-Agent transiently in memory for session and location aggregation, but raw IP addresses are not stored in its database. Learn more on their [privacy page](https://www.goatcounter.com/help/privacy).
+
+AltSendme sends these analytics events with bundled app code. It does not load GoatCounter's remote JavaScript inside the Tauri renderer.
 
 ## What This Project Doesn't Do
 
@@ -121,6 +125,7 @@ You maintain full control over:
 ## Data Retention
 
 - **Secret Keys**: Stored locally until you delete the application or clear application data
+- **App Settings and Relay Tokens**: Stored locally until you change the setting, clear the token, or remove application data
 - **Temporary Transfer Files**: Automatically cleaned up when transfers complete or the application closes
 - **Downloaded Files**: Remain on your device until you delete them
 

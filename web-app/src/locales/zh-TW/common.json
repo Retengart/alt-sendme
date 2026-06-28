@@ -216,7 +216,7 @@
 				"verifySuccessDescGeneric": "已成功註冊到您設定的中繼伺服器。",
 				"verifyFailed": "中繼連線失敗",
 				"urlRequired": "請至少新增一個中繼 URL。",
-				"invalidUrl": "無效的中繼 URL：{{url}}",
+				"invalidUrl": "無效的中繼 URL。",
 				"disabledHint": "啟用自動或自訂中繼以測試連線。",
 				"confirmDisableTitle": "停用中繼？",
 				"confirmDisableDescription": "您已選擇停用中繼。如果您嘗試與本地網路以外的人分享檔案，檔案傳輸可能會失敗。中繼可協助裝置在困難的網路條件下相互尋找並連線，而您的傳輸始終保持端對端加密。",

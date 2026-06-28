@@ -216,7 +216,7 @@
 				"verifySuccessDescGeneric": "Sozlangan relay serveringizda muvaffaqiyatli ro'yxatdan o'tdi.",
 				"verifyFailed": "Relay ulanishi muvaffaqiyatsiz",
 				"urlRequired": "Kamida bitta relay URL qo'shing.",
-				"invalidUrl": "Noto'g'ri relay URL: {{url}}",
+				"invalidUrl": "Noto'g'ri relay URL",
 				"disabledHint": "Ulanishni sinash uchun avtomatik yoki maxsus relay'larni yoqing.",
 				"confirmDisableTitle": "Relay'lar o'chirilsinmi?",
 				"confirmDisableDescription": "Siz relay'larni o'chirishni tanladingiz. Agar siz fayllarni mahalliy tarmog'ingizdan tashqaridagi kimdir bilan ulashmoqchi bo'lsangiz, fayl uzatishlar muvaffaqiyatsiz tugashi mumkin. Relay'lar qurilmalarga murakkab tarmoq sharoitlarida bir-birini topish va ulanishda yordam beradi, va uzatishlaringiz har doim uchma-uch shifrlangan bo'lib qoladi.",

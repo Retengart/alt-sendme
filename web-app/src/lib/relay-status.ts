@@ -11,20 +11,18 @@ type RelayConfigArg = {
 type RelayStatusConfigInput = {
 	relayMode: RelayMode
 	relayUrls: string[]
-	relayAuthToken: string
 	relayFallback: RelayFallback
 }
 
 export function buildRelayStatusConfig({
 	relayMode,
 	relayUrls,
-	relayAuthToken,
 	relayFallback,
 }: RelayStatusConfigInput): RelayConfigArg {
 	return {
 		mode: relayMode,
 		urls: relayUrls.map((url) => url.trim()).filter(Boolean),
-		auth_token: relayAuthToken.trim() || null,
+		auth_token: null,
 		fallback: relayFallback,
 	}
 }

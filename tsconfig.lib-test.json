@@ -12,6 +12,7 @@
 	"include": [
 		"web-app/src/lib/analytics-decision.ts",
 		"web-app/src/lib/analytics-decision.test.ts",
+		"web-app/src/lib/analytics-transport.test.ts",
 		"web-app/src/lib/relay-fallback-toast.ts",
 		"web-app/src/lib/relay-fallback-toast.test.ts",
 		"web-app/src/lib/relay-status.ts",

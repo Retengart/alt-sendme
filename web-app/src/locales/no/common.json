@@ -216,7 +216,7 @@
 				"verifySuccessDescGeneric": "Vellykket registrert hos din konfigurerte relay-server.",
 				"verifyFailed": "Relay-tilkobling mislyktes",
 				"urlRequired": "Legg til minst én relay-URL.",
-				"invalidUrl": "Ugyldig relay-URL: {{url}}",
+				"invalidUrl": "Ugyldig relay-URL",
 				"disabledHint": "Aktiver automatiske eller tilpassede relay for å teste tilkobling.",
 				"confirmDisableTitle": "Deaktivere relay?",
 				"confirmDisableDescription": "Du har valgt å deaktivere relay. Filoverføringer kan mislykkes hvis du prøver å dele filer med noen utenfor det lokale nettverket ditt. Relay hjelper enheter å finne og koble til hverandre under vanskelige nettverksforhold, og overføringene dine forblir alltid ende-til-ende-kryptert.",

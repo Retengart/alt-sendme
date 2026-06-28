@@ -8,6 +8,7 @@ use engine::{
 use iroh::{endpoint::presets, Endpoint};
 use n0_watcher::Watcher;
 use std::collections::BTreeMap;
+use std::net::IpAddr;
 use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -29,6 +30,74 @@ pub enum RelayFallbackPolicy {
     Public,
 }
 
+const MAX_RELAY_URL_LENGTH: usize = 2048;
+const MAX_RELAY_AUTH_TOKEN_LENGTH: usize = 4096;
+
+fn has_disallowed_relay_text_char(value: &str) -> bool {
+    value
+        .chars()
+        .any(|char| char.is_control() || char.is_whitespace())
+}
+
+fn normalize_relay_auth_token(value: Option<String>) -> Result<Option<String>, String> {
+    let Some(value) = value else {
+        return Ok(None);
+    };
+    if value.trim().is_empty() {
+        return Ok(None);
+    }
+    if value.len() > MAX_RELAY_AUTH_TOKEN_LENGTH {
+        return Err("Relay auth token is too long".to_string());
+    }
+    if has_disallowed_relay_text_char(&value) {
+        return Err(
+            "Relay auth token must not contain whitespace or control characters".to_string(),
+        );
+    }
+    Ok(Some(value))
+}
+
+fn is_loopback_relay_host(host: &str) -> bool {
+    if host.eq_ignore_ascii_case("localhost") {
+        return true;
+    }
+
+    host.parse::<IpAddr>()
+        .map(|addr| addr.is_loopback())
+        .unwrap_or(false)
+}
+
+fn parse_relay_url_for_ipc(url: &str, has_auth_token: bool) -> Result<iroh::RelayUrl, String> {
+    if url.is_empty() {
+        return Err("Relay URL must not be empty".to_string());
+    }
+    if url.len() > MAX_RELAY_URL_LENGTH {
+        return Err("Relay URL is too long".to_string());
+    }
+    if has_disallowed_relay_text_char(url) {
+        return Err("Relay URL must not contain whitespace or control characters".to_string());
+    }
+
+    let relay_url = iroh::RelayUrl::from_str(url).map_err(|e| format!("Invalid relay URL: {e}"))?;
+    if relay_url.username() != "" || relay_url.password().is_some() {
+        return Err("Relay URL must not include a username or password".to_string());
+    }
+
+    let host = relay_url
+        .host_str()
+        .ok_or_else(|| "Relay URL must include a host".to_string())?;
+
+    match relay_url.scheme() {
+        "https" => Ok(relay_url),
+        "http" if !has_auth_token && is_loopback_relay_host(host) => Ok(relay_url),
+        "http" if has_auth_token => {
+            Err("Relay URLs must use https when an auth token is configured".to_string())
+        }
+        "http" => Err("Plain HTTP relay URLs are only allowed for loopback hosts".to_string()),
+        _ => Err("Relay URL scheme must be https or loopback http".to_string()),
+    }
+}
+
 pub fn build_relay_mode(arg: Option<RelayConfigArg>) -> Result<RelayModeOption, String> {
     match arg {
         None => Ok(RelayModeOption::Default),
@@ -39,18 +108,13 @@ pub fn build_relay_mode(arg: Option<RelayConfigArg>) -> Result<RelayModeOption, 
                 if arg.urls.is_empty() {
                     return Err("At least one relay URL is required for custom mode".to_string());
                 }
+                let auth_token = normalize_relay_auth_token(arg.auth_token)?;
+                let has_auth_token = auth_token.is_some();
                 let urls = arg
                     .urls
                     .iter()
-                    .map(|url| {
-                        iroh::RelayUrl::from_str(url)
-                            .map_err(|e| format!("Invalid relay URL '{url}': {e}"))
-                    })
+                    .map(|url| parse_relay_url_for_ipc(url, has_auth_token))
                     .collect::<Result<Vec<_>, _>>()?;
-                let auth_token = arg
-                    .auth_token
-                    .map(|t| t.trim().to_string())
-                    .filter(|t| !t.is_empty());
                 Ok(RelayModeOption::Custom { urls, auth_token })
             }
             other => Err(format!("Invalid relay mode: {other}")),
@@ -75,6 +139,12 @@ pub struct RelayStatusResponse {
     pub url: Option<String>,
     pub connected: bool,
     pub fell_back_to_public: bool,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct TicketMetadataResponse {
+    pub metadata: FileMetadata,
+    pub relay_fallback_stage: Option<&'static str>,
 }
 
 pub fn is_public_relay_url(url: &str) -> bool {
@@ -236,7 +306,7 @@ pub async fn get_relay_status(
             kind: "unavailable".to_string(),
             url: None,
             connected: false,
-            fell_back_to_public: true,
+            fell_back_to_public: false,
         });
     }
 
@@ -366,11 +436,6 @@ pub async fn send_items(
 
         // Create send options from relay settings.
         let (relay_mode, fell_back_to_public) = resolve_relay_mode_with_fallback(relay).await?;
-        if let Some(payload) = relay_fallback_event_payload("send", fell_back_to_public) {
-            // Surface the selected custom->public fallback so the user knows this
-            // transfer is riding public relays despite their custom config.
-            let _ = app_handle.emit("relay-fell-back", payload);
-        }
         let options = SendOptions {
             relay_mode,
             ticket_type: AddrInfoOptions::RelayAndAddresses,
@@ -393,6 +458,11 @@ pub async fn send_items(
         )
         .await
         .map_err(|e| format!("Failed to start sharing: {}", e))?;
+        if let Some(payload) = relay_fallback_event_payload("send", fell_back_to_public) {
+            // Surface the selected custom->public fallback once the share has
+            // actually started with the resolved relay mode.
+            let _ = app_handle.emit("relay-fell-back", payload);
+        }
         Ok((result.ticket.clone(), path_bufs, result))
     }
     .await;
@@ -491,14 +561,14 @@ async fn build_send_metadata(paths: &[PathBuf]) -> Result<FileMetadata, String> 
 pub async fn fetch_ticket_metadata(
     ticket: String,
     relay: Option<RelayConfigArg>,
-    app_handle: tauri::AppHandle,
-) -> Result<FileMetadata, String> {
+    _app_handle: tauri::AppHandle,
+) -> Result<TicketMetadataResponse, String> {
     let (metadata, fallback_payload) =
         fetch_ticket_metadata_with_fallback_payload(ticket, relay).await?;
-    if let Some(payload) = fallback_payload {
-        let _ = app_handle.emit("relay-fell-back", payload);
-    }
-    Ok(metadata)
+    Ok(TicketMetadataResponse {
+        metadata,
+        relay_fallback_stage: fallback_payload,
+    })
 }
 
 async fn fetch_ticket_metadata_with_fallback_payload(
@@ -562,11 +632,6 @@ pub async fn receive_file(
     // Create receive options with user-specified output path
     let output_dir = PathBuf::from(output_path);
     let (relay_mode, fell_back_to_public) = resolve_relay_mode_with_fallback(relay).await?;
-    if let Some(payload) = relay_fallback_event_payload("receive", fell_back_to_public) {
-        // Surface the selected custom->public fallback so the user knows this
-        // transfer is riding public relays despite their custom config.
-        let _ = app_handle.emit("relay-fell-back", payload);
-    }
     let options = ReceiveOptions {
         output_dir: Some(output_dir),
         relay_mode,
@@ -582,7 +647,14 @@ pub async fn receive_file(
 
     // Download using the core library
     match download(ticket, options, boxed_handle).await {
-        Ok(result) => Ok(result.message),
+        Ok(result) => {
+            if let Some(payload) = relay_fallback_event_payload("receive", fell_back_to_public) {
+                // Surface the selected custom->public fallback after the
+                // receive path actually succeeded with the resolved relay mode.
+                let _ = app_handle.emit("relay-fell-back", payload);
+            }
+            Ok(result.message)
+        }
         Err(e) => {
             tracing::error!("Failed to receive file: {}", e);
             Err(format!("Failed to receive file: {}", e))
@@ -856,6 +928,85 @@ mod relay_config_tests {
         }))
         .expect_err("empty custom urls should fail");
         assert!(err.contains("At least one relay URL"));
+    }
+
+    #[test]
+    fn build_relay_mode_rejects_auth_token_over_http() {
+        let err = build_relay_mode(Some(RelayConfigArg {
+            mode: "custom".to_string(),
+            urls: vec!["http://127.0.0.1:3340".to_string()],
+            auth_token: Some("secret".to_string()),
+            fallback: None,
+        }))
+        .expect_err("auth tokens must not be sent over cleartext relay urls");
+
+        assert!(err.contains("https"));
+    }
+
+    #[test]
+    fn build_relay_mode_allows_loopback_http_without_auth_token() {
+        let mode = build_relay_mode(Some(RelayConfigArg {
+            mode: "custom".to_string(),
+            urls: vec!["http://127.0.0.1:3340".to_string()],
+            auth_token: None,
+            fallback: None,
+        }))
+        .expect("loopback http relay is allowed for local development without auth");
+
+        assert!(matches!(mode, RelayModeOption::Custom { .. }));
+    }
+
+    #[test]
+    fn build_relay_mode_rejects_embedded_url_credentials_without_echoing_them() {
+        let err = build_relay_mode(Some(RelayConfigArg {
+            mode: "custom".to_string(),
+            urls: vec!["https://user:password@relay.example.com".to_string()],
+            auth_token: None,
+            fallback: None,
+        }))
+        .expect_err("relay urls must not carry embedded credentials");
+
+        assert!(err.contains("username or password"));
+        assert!(!err.contains("user:password"));
+    }
+
+    #[test]
+    fn build_relay_mode_rejects_auth_token_whitespace() {
+        let err = build_relay_mode(Some(RelayConfigArg {
+            mode: "custom".to_string(),
+            urls: vec!["https://relay.example.com".to_string()],
+            auth_token: Some("secret token".to_string()),
+            fallback: None,
+        }))
+        .expect_err("bearer tokens must not contain whitespace");
+
+        assert!(err.contains("auth token"));
+    }
+
+    #[test]
+    fn build_relay_mode_rejects_auth_token_leading_or_trailing_whitespace() {
+        let err = build_relay_mode(Some(RelayConfigArg {
+            mode: "custom".to_string(),
+            urls: vec!["https://relay.example.com".to_string()],
+            auth_token: Some(" secret ".to_string()),
+            fallback: None,
+        }))
+        .expect_err("bearer tokens must not be silently trimmed");
+
+        assert!(err.contains("auth token"));
+    }
+
+    #[test]
+    fn build_relay_mode_rejects_oversized_auth_token() {
+        let err = build_relay_mode(Some(RelayConfigArg {
+            mode: "custom".to_string(),
+            urls: vec!["https://relay.example.com".to_string()],
+            auth_token: Some("a".repeat(MAX_RELAY_AUTH_TOKEN_LENGTH + 1)),
+            fallback: None,
+        }))
+        .expect_err("bearer tokens must have a bounded size");
+
+        assert!(err.contains("too long"));
     }
 
     #[test]

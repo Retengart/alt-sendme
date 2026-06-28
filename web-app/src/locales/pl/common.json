@@ -216,7 +216,7 @@
 				"verifySuccessDescGeneric": "Pomyślnie zarejestrowano na skonfigurowanym serwerze relay.",
 				"verifyFailed": "Połączenie relay nie powiodło się",
 				"urlRequired": "Dodaj co najmniej jeden adres URL relay.",
-				"invalidUrl": "Nieprawidłowy adres URL relay: {{url}}",
+				"invalidUrl": "Nieprawidłowy adres URL relay",
 				"disabledHint": "Włącz automatyczne lub niestandardowe relay, aby przetestować łączność.",
 				"confirmDisableTitle": "Wyłączyć relay?",
 				"confirmDisableDescription": "Wybrano wyłączenie relay. Przesyłanie plików może się nie powieść, jeśli spróbujesz udostępnić pliki komuś spoza Twojej sieci lokalnej. Relay pomagają urządzeniom odnaleźć się i połączyć w trudnych warunkach sieciowych, a Twoje transfery zawsze pozostają szyfrowane end-to-end.",

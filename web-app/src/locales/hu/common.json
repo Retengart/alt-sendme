@@ -216,7 +216,7 @@
 				"verifySuccessDescGeneric": "Sikeres regisztráció a konfigurált relay szerveren.",
 				"verifyFailed": "Relay kapcsolat sikertelen",
 				"urlRequired": "Adjon hozzá legalább egy relay URL-t.",
-				"invalidUrl": "Érvénytelen relay URL: {{url}}",
+				"invalidUrl": "Érvénytelen relay URL",
 				"disabledHint": "Kapcsolat teszteléséhez engedélyezze az automatikus vagy egyéni relay-t.",
 				"confirmDisableTitle": "Letiltja a relay-eket?",
 				"confirmDisableDescription": "Úgy döntött, hogy letiltja a relay-eket. A fájlátvitelek meghiúsulhatnak, ha a helyi hálózatán kívüli valakivel próbál fájlokat megosztani. A relay-ek segítenek az eszközöknek megtalálni egymást és kapcsolódni nehéz hálózati körülmények között, és az átvitelei mindig végpontok közötti titkosítással védettek maradnak.",

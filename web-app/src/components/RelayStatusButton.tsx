@@ -21,7 +21,6 @@ export function RelayStatusButton() {
 	const { t } = useTranslation()
 	const relayMode = useAppSettingStore((s) => s.relayMode)
 	const relayUrls = useAppSettingStore((s) => s.relayUrls)
-	const relayAuthToken = useAppSettingStore((s) => s.relayAuthToken)
 	const relayFallback = useAppSettingStore((s) => s.relayFallback)
 
 	const [status, setStatus] = useState<RelayStatusResponse | null>(null)
@@ -33,10 +32,9 @@ export function RelayStatusButton() {
 			buildRelayStatusConfig({
 				relayMode,
 				relayUrls,
-				relayAuthToken,
 				relayFallback,
 			}),
-		[relayMode, relayUrls, relayAuthToken, relayFallback]
+		[relayMode, relayUrls, relayFallback]
 	)
 
 	useEffect(() => {

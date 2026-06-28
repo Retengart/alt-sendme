@@ -147,8 +147,24 @@ export function RelaySettings() {
 			return
 		}
 
-		const uniqueUrls = [...new Set(trimmedUrls)]
 		const authToken = relayAuthToken.trim() || null
+		if (authToken !== null) {
+			const cleartextUrl = trimmedUrls.find(
+				(url) => new URL(url).protocol !== 'https:'
+			)
+			if (cleartextUrl) {
+				toastManager.add({
+					title: t('settings.network.relay.verifyFailed'),
+					description: t('settings.network.relay.invalidUrl', {
+						url: cleartextUrl,
+					}),
+					type: 'error',
+				})
+				return
+			}
+		}
+
+		const uniqueUrls = [...new Set(trimmedUrls)]
 
 		setIsTesting(true)
 		setVerifyResults((prev) => {

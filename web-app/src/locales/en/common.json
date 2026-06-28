@@ -227,7 +227,7 @@
 				"verifySuccessDescGeneric": "Successfully registered with your configured relay server.",
 				"verifyFailed": "Relay connection failed",
 				"urlRequired": "Add at least one relay URL.",
-				"invalidUrl": "Invalid relay URL: {{url}}",
+				"invalidUrl": "Invalid relay URL. Use HTTPS and do not include embedded credentials.",
 				"disabledHint": "Enable automatic or custom relays to test connectivity.",
 				"confirmDisableTitle": "Disable relays?",
 				"confirmDisableDescription": "You've chosen to disable relays. File transfers may fail if you try to share files with someone outside your local network. Relays help devices find & connect across difficult network conditions, and your transfers always stay end-to-end encrypted.",

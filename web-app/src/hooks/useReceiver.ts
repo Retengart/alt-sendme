@@ -7,6 +7,7 @@ import { selectDownloadFolder } from '@/plugins/nativeUtils'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import { sendSystemNotification } from '../lib/systemNotification'
+import { relayFallbackToastDescriptionKey } from '../lib/relay-fallback-toast'
 import type { AlertDialogState, AlertType } from '../types/ui'
 import type {
 	TicketPreviewMetadata,
@@ -17,6 +18,7 @@ import { SpeedAverager, calculateETA } from '../utils/etaUtils'
 import { IS_ANDROID } from '@/lib/platform'
 import { getRelayConfigArg } from '../lib/relay'
 import { useAppSettingStore } from '@/store/app-setting'
+import { toastManager } from '@/components/ui/toast'
 
 interface BackendFileMetadata {
 	file_name: string
@@ -32,6 +34,11 @@ interface BackendFileMetadata {
 				mime_type?: string | null
 		  }[]
 		| null
+}
+
+interface BackendTicketMetadataResponse {
+	metadata: BackendFileMetadata
+	relay_fallback_stage?: string | null
 }
 
 const isAbsolutePath = (path: string) => {
@@ -210,7 +217,7 @@ export function useReceiver(): UseReceiverReturn {
 
 		const timer = window.setTimeout(async () => {
 			try {
-				const payload = await invoke<BackendFileMetadata>(
+				const response = await invoke<BackendTicketMetadataResponse>(
 					'fetch_ticket_metadata',
 					{
 						ticket: trimmed,
@@ -222,6 +229,18 @@ export function useReceiver(): UseReceiverReturn {
 					return
 				}
 
+				const descriptionKey = response.relay_fallback_stage
+					? relayFallbackToastDescriptionKey(response.relay_fallback_stage)
+					: null
+				if (descriptionKey) {
+					toastManager.add({
+						title: t('footer.relay.fellBackToastTitle'),
+						description: t(descriptionKey),
+						type: 'warning',
+					})
+				}
+
+				const payload = response.metadata
 				const metadata = {
 					fileName: payload.file_name,
 					itemCount: payload.item_count,
@@ -254,7 +273,7 @@ export function useReceiver(): UseReceiverReturn {
 		return () => {
 			window.clearTimeout(timer)
 		}
-	}, [ticket, isReceiving])
+	}, [ticket, isReceiving, t])
 
 	const showAlert = useCallback(
 		(title: string, description: string, type: AlertType = 'info') => {

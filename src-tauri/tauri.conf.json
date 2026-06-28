@@ -35,19 +35,19 @@
 			"capabilities": ["default", "sendme:default", "sendme:android"],
 			"csp": {
 				"default-src": "'self' customprotocol: asset:",
-				"connect-src": "ipc: http://ipc.localhost https://gc.zgo.at https://alt-sendme.goatcounter.com",
+				"connect-src": "ipc: http://ipc.localhost https://alt-sendme.goatcounter.com",
 				"font-src": "'self' asset: http://asset.localhost blob: data: https:",
-				"img-src": "'self' asset: http://asset.localhost blob: data: https:",
+				"img-src": "'self' asset: http://asset.localhost blob: data:",
 				"style-src": "'unsafe-inline' 'self'",
-				"script-src": "'self' asset: http://asset.localhost https://gc.zgo.at"
+				"script-src": "'self' asset: http://asset.localhost"
 			},
 			"devCsp": {
 				"default-src": "'self' customprotocol: asset: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*",
-				"connect-src": "ipc: http://ipc.localhost http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:* https://gc.zgo.at https://alt-sendme.goatcounter.com",
+				"connect-src": "ipc: http://ipc.localhost http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:* https://alt-sendme.goatcounter.com",
 				"font-src": "'self' asset: http://asset.localhost blob: data: https:",
-				"img-src": "'self' asset: http://asset.localhost blob: data: https:",
+				"img-src": "'self' asset: http://asset.localhost blob: data:",
 				"style-src": "'unsafe-inline' 'self'",
-				"script-src": "'self' asset: http://asset.localhost https://gc.zgo.at"
+				"script-src": "'self' asset: http://asset.localhost"
 			},
 			"assetProtocol": {
 				"enable": false,

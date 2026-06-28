@@ -216,7 +216,7 @@
 				"verifySuccessDescGeneric": "Úspěšně registrováno na nakonfigurovaném relay serveru.",
 				"verifyFailed": "Připojení relay selhalo",
 				"urlRequired": "Přidejte alespoň jednu URL relay.",
-				"invalidUrl": "Neplatná URL relay: {{url}}",
+				"invalidUrl": "Neplatná URL relay",
 				"disabledHint": "Povolte automatické nebo vlastní relay pro test konektivity.",
 				"confirmDisableTitle": "Zakázat relay?",
 				"confirmDisableDescription": "Zvolili jste zakázání relay. Přenosy souborů mohou selhat, pokud se pokusíte sdílet soubory s někým mimo vaši místní síť. Relay pomáhají zařízením najít se a propojit za obtížných síťových podmínek a vaše přenosy vždy zůstávají koncově šifrované.",

@@ -216,7 +216,7 @@
 				"verifySuccessDescGeneric": "Uspešno registrovano na vašem konfigurisanom relay serveru.",
 				"verifyFailed": "Relay veza nije uspela",
 				"urlRequired": "Dodajte bar jednu relay URL adresu.",
-				"invalidUrl": "Nevažeća relay URL adresa: {{url}}",
+				"invalidUrl": "Nevažeća relay URL adresa",
 				"disabledHint": "Omogućite automatske ili prilagođene relay servere za test konekcije.",
 				"confirmDisableTitle": "Onemogućiti relay servere?",
 				"confirmDisableDescription": "Odabrali ste da onemogućite relay servere. Prenos datoteka može da ne uspe ako pokušate da delite datoteke sa nekim van vaše lokalne mreže. Relay serveri pomažu uređajima da se pronađu i povežu u teškim mrežnim uslovima, a vaši prenosi uvek ostaju end-to-end šifrovani.",

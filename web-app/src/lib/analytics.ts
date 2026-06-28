@@ -2,23 +2,8 @@ import {
 	type AnalyticsPlatform,
 	shouldUseAnalytics,
 } from './analytics-decision'
+import { sendGoatCounterEvent } from './analytics-transport'
 import { useAppSettingStore } from '../store/app-setting'
-
-declare global {
-	interface Window {
-		goatcounter?: {
-			count: (options: {
-				path?: string
-				title?: string
-				event?: boolean
-				no_events?: boolean
-				referrer?: string
-				allow_local?: boolean
-			}) => void
-			allow_local?: boolean
-		}
-	}
-}
 
 function getAnalyticsPlatform(): AnalyticsPlatform {
 	return import.meta.env.TAURI_PLATFORM === 'android' ? 'android' : 'desktop'
@@ -50,14 +35,11 @@ export function trackTransferComplete(
 	role: 'sender' | 'receiver',
 	_durationMs: number = 0
 ): void {
-	if (!canUseAnalytics() || typeof window === 'undefined' || !window.goatcounter) {
+	if (!canUseAnalytics() || typeof window === 'undefined') {
 		return
 	}
 
 	try {
-		window.goatcounter.count({
-			path: `transfer-complete/${role}`,
-			allow_local: true,
-		})
+		sendGoatCounterEvent(`transfer-complete/${role}`)
 	} catch (_error) {}
 }

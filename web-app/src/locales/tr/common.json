@@ -216,7 +216,7 @@
 				"verifySuccessDescGeneric": "Yapılandırılmış relay sunucunuza başarıyla kaydedildi.",
 				"verifyFailed": "Relay bağlantısı başarısız",
 				"urlRequired": "En az bir relay URL'si ekleyin.",
-				"invalidUrl": "Geçersiz relay URL'si: {{url}}",
+				"invalidUrl": "Geçersiz relay URL'si",
 				"disabledHint": "Bağlantıyı test etmek için otomatik veya özel relay'leri etkinleştirin.",
 				"confirmDisableTitle": "Relay'ler devre dışı bırakılsın mı?",
 				"confirmDisableDescription": "Relay'leri devre dışı bırakmayı seçtiniz. Yerel ağınızın dışındaki biriyle dosya paylaşmaya çalışırsanız dosya aktarımları başarısız olabilir. Relay'ler, cihazların zorlu ağ koşullarında birbirini bulup bağlanmasına yardımcı olur ve aktarımlarınız her zaman uçtan uca şifreli kalır.",
