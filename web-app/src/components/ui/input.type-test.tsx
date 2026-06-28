@@ -32,8 +32,22 @@ const runtimeNativeInput = true as boolean
 
 export const inputPropsAcceptRuntimeNativeBoolean: InputProps = {
 	nativeInput: runtimeNativeInput,
+	className: 'runtime mode',
 	placeholder: 'Runtime mode',
 }
+
+export const inputPropsAcceptBaseUiClassNameCallback: InputProps = {
+	className: () => 'base-ui state class',
+	placeholder: 'Base UI mode',
+}
+
+// @ts-expect-error Runtime boolean may render native input, so Base UI callback className is unsafe.
+export const inputPropsRejectRuntimeNativeBooleanWithCallbackClassName: InputProps =
+	{
+		nativeInput: runtimeNativeInput,
+		className: () => 'base-ui state class',
+		placeholder: 'Runtime mode',
+	}
 
 // @ts-expect-error Runtime boolean may render native input, so Base UI-only props are unsafe.
 export const inputPropsRejectRuntimeNativeBooleanWithBaseUiProps: InputProps = {

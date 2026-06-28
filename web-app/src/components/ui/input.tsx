@@ -12,13 +12,13 @@ type NativeInputProps = Omit<
 >
 
 type SharedInputProps = {
-	className?: InputPrimitive.Props['className']
 	size?: 'sm' | 'default' | 'lg' | number
 	unstyled?: boolean
 }
 
 type BaseUiInputProps = SharedInputProps &
 	InputPrimitiveProps & {
+		className?: InputPrimitive.Props['className']
 		nativeInput?: false
 	}
 
@@ -29,6 +29,7 @@ type NativeSafeInputProps = NativeInputProps & {
 
 type NativeInputModeProps = SharedInputProps &
 	NativeSafeInputProps & {
+		className?: React.ComponentPropsWithoutRef<'input'>['className']
 		nativeInput?: boolean
 	}
 
