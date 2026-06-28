@@ -47,7 +47,9 @@ By default, AltSendme may use relay servers operated by the [Iroh project](https
 - File contents (all data is encrypted end-to-end)
 - File names or directory structures
 - File metadata beyond transfer size
-- Who you are communicating with (only encrypted connection endpoints)
+- Transfer ticket content
+
+Relay servers may still observe endpoint and network metadata such as IP addresses, connection timing, duration, and transfer volume.
 
 **Your Control:**
 - You can disable relay servers entirely in **Settings → Network** (this may limit connectivity in some network configurations)
@@ -78,7 +80,7 @@ When a direct peer-to-peer connection is established (the preferred method), no 
 This project uses [GoatCounter](https://www.goatcounter.com/), a privacy‑respecting, open‑source analytics service.
 
 **What GoatCounter Records:**
-- Anonymous total transfer volume
+- Aggregate, coarse transfer statistics
 
 
 **What Is Never Collected via GoatCounter:**
