@@ -145,7 +145,7 @@ Tickets are bearer credentials while a share is active: anyone who has the ticke
 
 ### 3. Peer Discovery, NAT Traversal & Hole Punching
 
-Peers register with an open-source public relay servers at startup to help traverse firewalls and NATs, enabling connection setup. Once connected, Iroh uses QUIC hole punching to try and establish a direct peer-to-peer connection, bypassing the relay. If direct connection is possible, communication happens directly between peers with end-to-end encryption; otherwise, the relay operates only temporarily as a fallback. This enables smooth reliable connections between peers within local-network and across the internet.
+Peers register with open-source public relay servers to stay reachable, assist connection setup, and help traverse firewalls and NATs. Once connected, Iroh uses QUIC hole punching to try to establish a direct peer-to-peer connection that bypasses the relay. If a direct path is available, communication happens directly between peers with end-to-end encryption; otherwise, encrypted traffic can continue through a relay as fallback transport. This enables reliable connections between peers on local networks and across the internet.
 
 ###  4. QUIC & Encryption
 
@@ -163,7 +163,7 @@ QUIC allows following super-powers:
 
 ### 5. Relays
 
-AltSendme uses open-source public relay servers to support establishing direct connections, to speed up initial connection times, and to provide a fallback should direct connections between two endpoints fail or be impossible otherwise. All connections are end-to-end encrypted, so relays cannot read file contents, file names, or directory structures. Relay operators can still observe connection metadata such as IP addresses, timing, duration, and transfer volume. The relay is “just another UDP socket” for sending encrypted packets around. [Read more.](https://docs.iroh.computer/about/faq)
+AltSendme uses open-source public relay servers for endpoint reachability, registration, connection setup, NAT traversal and hole punching, and encrypted fallback transport when a direct path cannot be established. Direct peer-to-peer paths are preferred when available. All connections are end-to-end encrypted, so relays cannot read file contents, file names, directory structures, metadata payloads, or transfer tickets. Relay operators can still observe endpoint and network metadata such as IP addresses, timing, duration, and transfer volume. The relay is “just another UDP socket” for sending encrypted packets around. [Read more.](https://docs.iroh.computer/about/faq)
 
 ### Self-hosting relays
 
@@ -324,4 +324,3 @@ Thank you for checking out this project! If you find it useful, consider giving 
 [badge-discord]: https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white
 [badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20Android%2C%20-green
 [badge-sponsor]: https://img.shields.io/badge/sponsor-ff69b4
-

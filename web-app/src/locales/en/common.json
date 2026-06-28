@@ -186,7 +186,7 @@
 				"title": "Privacy",
 				"analytics": {
 					"label": "Share aggregate usage analytics",
-					"description": "Allow desktop-only, privacy-safe analytics for coarse transfer completion events. Disabled when Do Not Track is active."
+					"description": "Allow desktop-only analytics for coarse transfer completion events. No file data, tickets, or personal identifiers are sent."
 				}
 			}
 		},
@@ -265,6 +265,7 @@
 			"fellBackToastTitle": "Using public relay",
 			"fellBackToastSend": "Your custom relay was unreachable — this transfer is using a public relay instead.",
 			"fellBackToastReceive": "Your custom relay was unreachable — this download is using a public relay instead.",
+			"fellBackToastPreview": "Your custom relay was unreachable — this ticket preview used a public relay.",
 			"dialogDescription": "Shows which relay server this app is currently using for connections.",
 			"connectedRelay": "Connected relay",
 			"checking": "Checking connection…",

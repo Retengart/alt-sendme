@@ -9,14 +9,14 @@ AltSendme is designed with privacy and security as core principles. This privacy
 - **No Account Required**: AltSendme does not require user registration, accounts, or any personal information
 - **End-to-End Encryption**: All file transfers are encrypted end-to-end using QUIC + TLS 1.3
 - **Peer-to-Peer**: Files are transferred directly between sender and receiver when possible
-- **Analytics**: GoatCounter is used to collect aggregate transfer stats only - never IP, personal data or file contents.
+- **Analytics**: The app sends GoatCounter only coarse aggregate transfer event paths; it does not send file data, transfer tickets, or personal identifiers.
 
 ## How AltSendme Works
 
 AltSendme uses peer-to-peer (P2P) networking technology powered by [Iroh](https://www.iroh.computer) to transfer files directly between devices. The application:
 
-1. **Establishes Direct Connections**: When possible, files are transferred directly between devices using NAT hole punching
-2. **Uses Relay Servers as Fallback**: If direct connection isn't possible, the application may use relay servers to facilitate the transfer. Custom relays default to strict mode, which stops the transfer if the custom relay is unreachable; public relay fallback is used only when selected.
+1. **Establishes Direct Connections**: Direct peer-to-peer transfer is preferred when possible, using NAT hole punching
+2. **Uses Relay Servers for Reachability and Fallback**: Iroh relays can be used for endpoint reachability and registration, connection setup, NAT traversal and hole punching, and encrypted fallback transport when a direct path cannot be established. Custom relays default to strict mode, which stops the transfer if the custom relay is unreachable; public relay fallback is used only when selected.
 3. **Encrypts All Traffic**: All file data is encrypted end-to-end, meaning only the sender and receiver can decrypt it
 
 ## Data Stored Locally
@@ -35,7 +35,7 @@ Transfer tickets are bearer credentials while a share is active. Anyone who has 
 
 ### Relay Servers
 
-By default, AltSendme may use relay servers operated by the [Iroh project](https://www.iroh.computer) (n0) when direct peer-to-peer connections cannot be established. 
+By default, AltSendme may use relay servers operated by the [Iroh project](https://www.iroh.computer) (n0) for endpoint reachability, registration, connection setup, NAT traversal and hole punching, and encrypted fallback transport when a direct peer-to-peer path cannot be established.
 
 **What Relay Servers May See:**
 - Connection metadata (IP addresses, connection timestamps)
@@ -56,7 +56,7 @@ Relay servers may still observe endpoint and network metadata such as IP address
 - You can configure custom self-hosted relay servers in **Settings → Network** (see [`deploy/relay/`](deploy/relay/README.md) in the project repo)
 - Custom relay mode defaults to strict fallback: if your custom relay is unreachable, the transfer fails instead of using public relays
 - You can explicitly choose public relay fallback for custom relays in **Settings → Network**
-- Relay servers are only used when direct connections fail
+- Direct peer-to-peer transfer is preferred when available, but relay registration and connection setup can still occur before a direct path is established
 
 ### DNS Discovery
 
@@ -80,17 +80,17 @@ When a direct peer-to-peer connection is established (the preferred method), no 
 This project uses [GoatCounter](https://www.goatcounter.com/), a privacy‑respecting, open‑source analytics service.
 
 **What GoatCounter Records:**
-- Aggregate, coarse transfer statistics
+- Coarse aggregate transfer event paths, such as bucketed completion, size, and speed categories
+- Network request metadata is received by the GoatCounter service
 
 
 **What Is Never Collected via GoatCounter:**
-- IP addresses
 - Personal information or user identities
-- File contents, file names, or per‑transfer details/sizes
+- File contents, file names, transfer tickets, or exact per‑transfer details/sizes
 - Cross‑site tracking or profiling
 - No cookies, no device fingerprinting, no unique identifiers
 
-GoatCounter is privacy‑friendly by design and respects “Do Not Track”. Learn more on their [privacy page](https://www.goatcounter.com/help/privacy).
+GoatCounter respects “Do Not Track”. According to GoatCounter's privacy documentation, it may use IP address and User-Agent transiently in memory for session and location aggregation, but raw IP addresses are not stored in its database. Learn more on their [privacy page](https://www.goatcounter.com/help/privacy).
 
 ## What This Project Doesn't Do
 
@@ -98,7 +98,7 @@ GoatCounter is privacy‑friendly by design and respects “Do Not Track”. Lea
 - ❌ File contents are not tracked
 - ❌ Files are not stored or accessed in any servers - no server end
 - ❌ Invasive tracking services or cookies are not used
-- ❌ Data is not shared with third parties (beyond aggregate analytics)
+- ❌ File data, tickets, and personal identifiers are not shared with analytics services
 
 
 ## Open Source and Transparency
@@ -129,7 +129,7 @@ You maintain full control over:
 AltSendme uses the following third-party services:
 
 1. **Iroh Network Library**: Core P2P networking functionality ([Iroh Privacy](https://www.iroh.computer))
-2. **Default Relay Servers**: Operated by the Iroh project, used only when direct connections fail
+2. **Default Relay Servers**: Operated by the Iroh project, used for endpoint reachability, setup, NAT traversal, and encrypted fallback transport
 3. **DNS Discovery**: Used for peer discovery when necessary
 4. **GoatCounter Analytics**: Privacy-respecting analytics service for aggregate usage statistics ([GoatCounter Privacy](https://www.goatcounter.com/help/privacy))
 

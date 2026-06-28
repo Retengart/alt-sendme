@@ -135,6 +135,13 @@ fn apply_custom_relay_probe_result(
     }
 }
 
+fn relay_fallback_event_payload(
+    stage: &'static str,
+    fell_back_to_public: bool,
+) -> Option<&'static str> {
+    fell_back_to_public.then_some(stage)
+}
+
 /// Prefer configured custom relays; fall back to public relays only when selected.
 pub async fn resolve_relay_mode_with_fallback(
     arg: Option<RelayConfigArg>,
@@ -359,10 +366,10 @@ pub async fn send_items(
 
         // Create send options from relay settings.
         let (relay_mode, fell_back_to_public) = resolve_relay_mode_with_fallback(relay).await?;
-        if fell_back_to_public {
+        if let Some(payload) = relay_fallback_event_payload("send", fell_back_to_public) {
             // Surface the selected custom->public fallback so the user knows this
             // transfer is riding public relays despite their custom config.
-            let _ = app_handle.emit("relay-fell-back", "send");
+            let _ = app_handle.emit("relay-fell-back", payload);
         }
         let options = SendOptions {
             relay_mode,
@@ -484,11 +491,24 @@ async fn build_send_metadata(paths: &[PathBuf]) -> Result<FileMetadata, String> 
 pub async fn fetch_ticket_metadata(
     ticket: String,
     relay: Option<RelayConfigArg>,
+    app_handle: tauri::AppHandle,
 ) -> Result<FileMetadata, String> {
+    let (metadata, fallback_payload) =
+        fetch_ticket_metadata_with_fallback_payload(ticket, relay).await?;
+    if let Some(payload) = fallback_payload {
+        let _ = app_handle.emit("relay-fell-back", payload);
+    }
+    Ok(metadata)
+}
+
+async fn fetch_ticket_metadata_with_fallback_payload(
+    ticket: String,
+    relay: Option<RelayConfigArg>,
+) -> Result<(FileMetadata, Option<&'static str>), String> {
     let ticket_len = ticket.len();
     tracing::info!(ticket_len, "fetch_ticket_metadata called");
 
-    let (relay_mode, _) = resolve_relay_mode_with_fallback(relay).await?;
+    let (relay_mode, fell_back_to_public) = resolve_relay_mode_with_fallback(relay).await?;
     let options = ReceiveOptions {
         output_dir: None,
         relay_mode,
@@ -504,7 +524,10 @@ pub async fn fetch_ticket_metadata(
                 has_thumbnail = metadata.thumbnail.is_some(),
                 "fetch_ticket_metadata succeeded"
             );
-            Ok(metadata)
+            Ok((
+                metadata,
+                relay_fallback_event_payload("preview", fell_back_to_public),
+            ))
         }
         Err(e) => Err(format!("Failed to fetch metadata: {}", e)),
     }
@@ -539,10 +562,10 @@ pub async fn receive_file(
     // Create receive options with user-specified output path
     let output_dir = PathBuf::from(output_path);
     let (relay_mode, fell_back_to_public) = resolve_relay_mode_with_fallback(relay).await?;
-    if fell_back_to_public {
+    if let Some(payload) = relay_fallback_event_payload("receive", fell_back_to_public) {
         // Surface the selected custom->public fallback so the user knows this
         // transfer is riding public relays despite their custom config.
-        let _ = app_handle.emit("relay-fell-back", "receive");
+        let _ = app_handle.emit("relay-fell-back", payload);
     }
     let options = ReceiveOptions {
         output_dir: Some(output_dir),
@@ -876,6 +899,15 @@ mod relay_config_tests {
         assert!(matches!(mode, RelayModeOption::Default));
         assert!(fell_back);
     }
+
+    #[test]
+    fn relay_fallback_preview_payload_only_when_public_fallback_was_used() {
+        assert_eq!(
+            relay_fallback_event_payload("preview", true),
+            Some("preview")
+        );
+        assert_eq!(relay_fallback_event_payload("preview", false), None);
+    }
 }
 
 #[cfg(test)]
@@ -925,10 +957,12 @@ mod tests {
         .await
         .expect("start_share should succeed");
 
-        let fetched = fetch_ticket_metadata(share.ticket.clone(), None)
-            .await
-            .expect("fetch_ticket_metadata command should succeed");
+        let (fetched, fallback_payload) =
+            fetch_ticket_metadata_with_fallback_payload(share.ticket.clone(), None)
+                .await
+                .expect("fetch_ticket_metadata command should succeed");
 
+        assert_eq!(fallback_payload, None);
         assert_eq!(fetched.file_name, expected_metadata.file_name);
         assert_eq!(fetched.size, expected_metadata.size);
         assert_eq!(fetched.thumbnail, expected_metadata.thumbnail);

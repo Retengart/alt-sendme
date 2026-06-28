@@ -389,7 +389,7 @@ jobs:
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build release APKs (universal + per-ABI)
         env:
