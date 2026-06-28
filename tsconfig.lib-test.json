@@ -5,12 +5,16 @@
 		"module": "NodeNext",
 		"moduleResolution": "NodeNext",
 		"noEmit": false,
-		"outDir": "./tmp/analytics-test-dist",
+		"outDir": "./tmp/lib-test-dist",
 		"rootDir": ".",
 		"types": ["node"]
 	},
 	"include": [
 		"web-app/src/lib/analytics-decision.ts",
-		"web-app/src/lib/analytics-decision.test.ts"
+		"web-app/src/lib/analytics-decision.test.ts",
+		"web-app/src/lib/relay-fallback-toast.ts",
+		"web-app/src/lib/relay-fallback-toast.test.ts",
+		"web-app/src/lib/relay-status.ts",
+		"web-app/src/lib/relay-status.test.ts"
 	]
 }
