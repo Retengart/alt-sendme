@@ -218,8 +218,11 @@ jobs:
           node scripts/validate-version.js
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
+      - name: Sync npm lockfile with release version
+        run: npm install --package-lock-only --ignore-scripts
+
       - name: install frontend dependencies
-        run: npm install
+        run: npm ci
 
       # Belt-and-suspenders: macOS builds need the relevant Apple targets on the active toolchain.
       - name: Ensure macOS targets

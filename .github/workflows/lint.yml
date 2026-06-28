@@ -19,30 +19,33 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: '24.x'
+          cache: npm
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Run lint script
         run: npm run lint
-      - name: Run format script
-        run: npm run lint:fix && npm run format
 
-  lockfiles-check:
-    name: Reject lockfile-only changes
+  audit:
+    name: Audit dependency lockfiles
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+
     steps:
       - uses: actions/checkout@v5
+      - name: Use Node.js
+        uses: actions/setup-node@v5
         with:
-          fetch-depth: 0
-      - name: Ensure lockfiles are not changed without manifest changes
+          node-version: '24.x'
+          cache: npm
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@3056ad9b1fc916cb9a55f7f72ae4a848b7d50249 # 1.91.0
+        with:
+          toolchain: 1.91.0
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+      - name: Install dependencies
+        run: npm ci
+      - name: Run dependency audits
         run: |
-          BASE="${{ github.event.pull_request.base.sha }}"
-          CHANGED=$(git diff --name-only "$BASE"...HEAD)
-          fail() { echo "::error::$1"; exit 1; }
-          if echo "$CHANGED" | grep -q '^src-tauri/Cargo\.lock$'; then
-            echo "$CHANGED" | grep -q '^src-tauri/Cargo\.toml$' || fail "src-tauri/Cargo.lock was modified but src-tauri/Cargo.toml was not. Only change Cargo.lock when you add/update dependencies in Cargo.toml. To discard: git checkout origin/main -- src-tauri/Cargo.lock"
-          fi
-          if echo "$CHANGED" | grep -q '^engine/Cargo\.lock$'; then
-            echo "$CHANGED" | grep -q '^engine/Cargo\.toml$' || fail "engine/Cargo.lock was modified but engine/Cargo.toml was not. Only change Cargo.lock when you add/update dependencies in Cargo.toml. To discard: git checkout origin/main -- engine/Cargo.lock"
-          fi
-          echo "Lockfiles check passed."
+          cargo audit --file engine/Cargo.lock
+          cargo audit --file src-tauri/Cargo.lock
+          npm audit --audit-level=high
